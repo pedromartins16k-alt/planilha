@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planilha Fácil — SaaS Premium 2.0</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SheetJS (xlsx) para Exportação Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#2563eb',
+                            blueHover: '#1d4ed8',
+                            cyan: '#06b6d4',
+                            emerald: '#10b981',
+                        },
+                        dark: {
+                            base: '#080c14',
+                            surface: '#0e1526',
+                            card: '#141c30',
+                            border: '#1e293b',
+                            input: '#0b101d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            --dark-base: #080c14;
+            --dark-surface: #0e1526;
+            --dark-card: #141c30;
+            --dark-border: #1e293b;
+            --brand-blue: #2563eb;
+            --brand-cyan: #06b6d4;
+            --brand-emerald: #10b981;
+        }
+
+        .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: var(--dark-base); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--dark-border); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        .glass-panel {
+            background: rgba(14, 21, 38, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .glass-card {
+            background: rgba(20, 28, 48, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glow-blue {
+            box-shadow: 0 0 25px -5px rgba(37, 99, 235, 0.3);
+        }
+
+        .badge-level-1 { background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.3); }
+        .badge-level-2 { background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-level-3 { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+        .badge-level-default { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-dark-base text-slate-200 font-sans min-h-screen flex flex-col selection:bg-brand-blue selection:text-white">
+
+    <header class="bg-dark-surface/90 backdrop-blur-xl border-b border-dark-border sticky top-0 z-50 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-br from-brand-blue to-brand-cyan text-white p-2.5 rounded-xl shadow-lg shadow-brand-blue/20 flex items-center justify-center">
+                    <i class="fa-solid fa-table-cells text-lg"></i>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-display font-extrabold tracking-tight text-white">Planilha<span class="text-brand-cyan">Fácil</span></span>
+                    <span class="text-[10px] font-mono font-bold bg-brand-blue/10 text-brand-cyan border border-brand-cyan/20 px-2 py-0.5 rounded-full uppercase tracking-wider">v2.0 PRO</span>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center space-x-8 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <a href="#como-funciona" class="hover:text-white transition">Como Funciona</a>
+                <a href="#workspace" class="hover:text-white transition">Workspace</a>
+                <a href="#recursos" class="hover:text-white transition">Recursos</a>
+            </nav>
+
+            <div class="flex items-center space-x-3">
+                <a href="#workspace" class="bg-brand-blue hover:bg-brand-blueHover text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-brand-blue/25 transition flex items-center gap-2">
+                    <span>Criar Planilha</span>
+                    <i class="fa-solid fa-arrow-down text-[10px]"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative overflow-hidden py-12 md:py-20 border-b border-dark-border">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-blue/15 via-dark-base to-dark-base pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan text-xs font-medium">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Conversor Inteligente de Listas em Excel</span>
+                </div>
+                
+                <h1 class="text-3xl sm:text-5xl font-display font-extrabold text-white tracking-tight leading-tight">
+                    Da lista à planilha.<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue via-brand-cyan to-brand-emerald">Sem complicação.</span>
+                </h1>
+                
+                <p class="text-slate-400 text-sm sm:text-base font-normal leading-relaxed max-w-xl mx-auto lg:mx-0">
+                    Transforme listas desorganizadas em grades de aulas claras, editáveis e prontas para exportar. Organize datas, horários, disciplinas e níveis em poucos passos.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
+                    <a href="#workspace" class="bg-brand-blue hover:bg-brand-blueHover text-white font-semibold text-sm px-6 py-3.5 rounded-xl shadow-xl shadow-brand-blue/25 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i>
+                        <span>Criar minha planilha</span>
+                    </a>
+                    <button onclick="carregarExemploEDescer()" class="glass-card hover:bg-slate-800 text-slate-300 font-medium text-xs px-5 py-3.5 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-eye text-brand-cyan"></i>
+                        <span>Ver demonstração</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-6">
+                <div class="glass-panel p-4 rounded-2xl shadow-2xl relative glow-blue">
+                    <div class="flex items-center justify-between pb-3 border-b border-dark-border text-xs text-slate-400">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                        </div>
+                        <span class="font-mono text-[11px] text-slate-400">Planilha_Outubro_2026.xlsx</span>
+                    </div>
+
+                    <div class="mt-4 space-y-2 font-mono text-xs">
+                        <div class="p-3 rounded-xl bg-dark-card/90 border border-dark-border flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="text-brand-cyan font-bold">02/10</span>
+                                <span class="text-slate-400">Sexta</span>
+                                <span class="text-slate-300 font-sans font-semibold">Life</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 text-[11px]">18:00 - 19:00</span>
+                                <span class="badge-level-3 px-2 py-0.5 rounded text-[10px] font-bold">Nível 3</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-dark-card/90 border border-dark-border flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="text-brand-cyan font-bold">02/10</span>
+                                <span class="text-slate-400">Sexta</span>
+                                <span class="text-slate-300 font-sans font-semibold">Life</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 text-[11px]">19:00 - 20:00</span>
+                                <span class="badge-level-3 px-2 py-0.5 rounded text-[10px] font-bold">Nível 3</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-dark-card/90 border border-dark-border flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="text-brand-cyan font-bold">06/10</span>
+                                <span class="text-slate-400">Terça</span>
+                                <span class="text-slate-300 font-sans font-semibold">Energy</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400 text-[11px]">09:00 - 10:00</span>
+                                <span class="badge-level-1 px-2 py-0.5 rounded text-[10px] font-bold">Nível 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="como-funciona" class="bg-dark-surface py-6 border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                
+                <div id="step-card-1" class="glass-card p-3.5 rounded-xl border-l-4 border-l-brand-blue flex items-center space-x-3">
+                    <span class="w-7 h-7 rounded-lg bg-brand-blue/20 text-brand-cyan font-bold text-xs flex items-center justify-center shrink-0">1</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Entrada da Lista</h4>
+                        <p class="text-[10px] text-slate-400">Cole os dados brutos</p>
+                    </div>
+                </div>
+
+                <div id="step-card-2" class="glass-card p-3.5 rounded-xl border-l-4 border-l-slate-700 opacity-60 flex items-center space-x-3">
+                    <span class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center shrink-0">2</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Interpretação</h4>
+                        <p class="text-[10px] text-slate-400">Extração inteligente</p>
+                    </div>
+                </div>
+
+                <div id="step-card-3" class="glass-card p-3.5 rounded-xl border-l-4 border-l-slate-700 opacity-60 flex items-center space-x-3">
+                    <span class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center shrink-0">3</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Revisão & Edição</h4>
+                        <p class="text-[10px] text-slate-400">Ajuste na tabela</p>
+                    </div>
+                </div>
+
+                <div id="step-card-4" class="glass-card p-3.5 rounded-xl border-l-4 border-l-slate-700 opacity-60 flex items-center space-x-3">
+                    <span class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 font-bold text-xs flex items-center justify-center shrink-0">4</span>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">Exportação Excel</h4>
+                        <p class="text-[10px] text-slate-400">Download em .xlsx</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <main id="workspace" class="max-w-7xl mx-auto px-4 sm:px-6 py-10 flex-1 w-full space-y-8">
+
+        <!-- ETAPA 1: Entrada de Dados -->
+        <section class="glass-panel rounded-2xl p-6 md:p-8 space-y-6 shadow-2xl relative">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-bold tracking-wider text-brand-cyan uppercase bg-brand-cyan/10 px-2 py-0.5 rounded border border-brand-cyan/20">Etapa 01</span>
+                        <h3 class="text-lg font-display font-bold text-white">Entrada de Dados</h3>
+                    </div>
+                    <p class="text-xs text-slate-400">Cole a sua lista contendo horários, datas, matérias e níveis.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="carregarExemplo()" class="text-xs bg-dark-card hover:bg-slate-800 text-brand-cyan border border-brand-cyan/30 px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 font-medium">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Carregar Exemplo
+                    </button>
+                    <button onclick="limparTudo()" class="text-xs bg-dark-card hover:bg-slate-800 text-slate-400 border border-dark-border px-3 py-2 rounded-xl hover:text-red-400 transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <textarea id="inputText" rows="6" 
+                class="w-full p-4 bg-dark-input border border-dark-border rounded-xl focus:ring-2 focus:ring-brand-blue focus:border-brand-blue text-xs font-mono text-slate-200 placeholder-slate-600 transition custom-scroll leading-relaxed"
+                placeholder="Exemplo de entrada:
+Mês: Outubro de 2026
+Sexta-feira 02/10 18:00 às 20:00 - Life - Nível 3
+Terça-feira 06/10 09:00 às 10:00 - Energy - Nível 1
+Quarta-feira 07/10 11:00 às 12:00 - Vision - Nível 2"></textarea>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="interpretarLista()" class="w-full sm:w-auto bg-brand-blue hover:bg-brand-blueHover text-white font-bold text-sm px-8 py-3.5 rounded-xl shadow-lg shadow-brand-blue/30 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt text-brand-cyan"></i>
+                    <span>Interpretar Lista de Aulas</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="previewSection" class="hidden space-y-6 animate-fade-in">
+            
+            <!-- Barra de Controles da Tabela -->
+            <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-bold tracking-wider text-brand-emerald uppercase bg-brand-emerald/10 px-2 py-0.5 rounded border border-brand-emerald/20">Etapa 02 & 03</span>
+                        <h3 class="text-base font-bold text-white">Revisão e Edição dos Registros</h3>
+                    </div>
+                    <p class="text-xs text-slate-400">Aulas encontradas: <span id="recordCount" class="font-bold text-brand-cyan font-mono">0</span></p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <!-- Seletor de Mês/Ano -->
+                    <div class="flex items-center gap-1.5 bg-dark-input border border-dark-border px-3 py-1.5 rounded-xl text-xs">
+                        <i class="fa-regular fa-calendar text-brand-cyan"></i>
+                        <select id="selectMonth" class="bg-transparent text-slate-200 focus:outline-none font-medium">
+                            <option value="1">Jan</option>
+                            <option value="2">Fev</option>
+                            <option value="3">Mar</option>
+                            <option value="4">Abr</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Jun</option>
+                            <option value="7">Jul</option>
+                            <option value="8">Ago</option>
+                            <option value="9">Set</option>
+                            <option value="10" selected>Out</option>
+                            <option value="11">Nov</option>
+                            <option value="12">Dez</option>
+                        </select>
+                        <select id="selectYear" class="bg-transparent text-slate-200 focus:outline-none font-medium">
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
+                        </select>
+                    </div>
+
+                    <button onclick="adicionarLinha()" class="text-xs bg-dark-card hover:bg-slate-800 text-slate-300 font-medium px-3.5 py-2 rounded-xl border border-dark-border transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-brand-blue"></i> Adicionar Aula
+                    </button>
+
+                    <button onclick="ordenarPorData()" class="text-xs bg-dark-card hover:bg-slate-800 text-slate-300 font-medium px-3.5 py-2 rounded-xl border border-dark-border transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-arrow-down-short-wide text-brand-cyan"></i> Ordenar
+                    </button>
+
+                    <button onclick="exportarExcel()" class="bg-brand-emerald hover:bg-emerald-600 text-white font-bold text-xs px-5 py-2 rounded-xl shadow-lg shadow-emerald-900/30 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Exportar Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabela de Registros -->
+            <div class="glass-panel rounded-2xl overflow-hidden border border-dark-border">
+                <div class="overflow-x-auto custom-scroll max-h-[550px]">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-dark-card text-slate-300 font-bold sticky top-0 border-b border-dark-border z-10">
+                            <tr>
+                                <th class="p-3.5 text-center w-12 text-slate-500 font-mono">#</th>
+                                <th class="p-3.5 w-32">Data</th>
+                                <th class="p-3.5 w-36">Dia da Semana</th>
+                                <th class="p-3.5 w-28">Início</th>
+                                <th class="p-3.5 w-28">Término</th>
+                                <th class="p-3.5">Disciplina</th>
+                                <th class="p-3.5 w-28 text-center">Nível</th>
+                                <th class="p-3.5 text-center w-16">Excluir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-dark-border">
+                            <!-- Inserido dinamicamente via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="bg-dark-surface border-t border-dark-border py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>Planilha Fácil © 2026 — Gerenciador Inteligente de Aulas e Horários.</p>
+        </div>
+    </footer>
+
+    <script>
+        let globalItems = [];
+
+        const DIAS_SEMANA = [
+            "Segunda-feira", "Terça-feira", "Quarta-feira", 
+            "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"
+        ];
+
+        const MESES = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+
+        function updateStepStatus(stepNumber) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`step-card-${i}`);
+                if (!el) continue;
+                if (i <= stepNumber) {
+                    el.classList.remove('opacity-60', 'border-l-slate-700');
+                    el.classList.add('border-l-brand-blue');
+                    const badge = el.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-slate-800', 'text-slate-400');
+                        badge.classList.add('bg-brand-blue/20', 'text-brand-cyan');
+                    }
+                }
+            }
+        }
+
+        function carregarExemplo() {
+            const exemplo = `Mês: Outubro de 2026
+
+Sexta-feira 02/10 18:00 às 20:00 - Life - Nível 3
+Terça-feira 06/10 09:00 às 10:00 - Energy - Nível 1
+Quarta-feira 07/10 11:00 às 12:00 - Vision - Nível 2`;
+
+            document.getElementById('inputText').value = exemplo;
+        }
+
+        function carregarExemploEDescer() {
+            carregarExemplo();
+            interpretarLista();
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function limparTudo() {
+            document.getElementById('inputText').value = '';
+            globalItems = [];
+            document.getElementById('previewSection').classList.add('hidden');
+            updateStepStatus(1);
+        }
+
+        function parseHeaderInfo(rawText) {
+            const monthMatch = rawText.match(/mês:\s*([a-zçãõ]+)\s*de\s*(\d{4})/i);
+            if (monthMatch) {
+                const monthStr = monthMatch[1].toLowerCase();
+                const yearStr = monthMatch[2];
+                
+                const monthIdx = MESES.findIndex(m => m.toLowerCase().startsWith(monthStr.substring(0, 3)));
+                if (monthIdx !== -1) {
+                    document.getElementById('selectMonth').value = (monthIdx + 1).toString();
+                }
+                document.getElementById('selectYear').value = yearStr;
+            }
+        }
+
+        function interpretarLista() {
+            const rawText = document.getElementById('inputText').value.trim();
+            if (!rawText) {
+                return;
+            }
+
+            parseHeaderInfo(rawText);
+            const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && !l.toLowerCase().startsWith('mês:'));
+            
+            globalItems = [];
+
+            lines.forEach((line) => {
+                const parsedEntries = parseSingleLineToBlocks(line);
+                globalItems.push(...parsedEntries);
+            });
+
+            document.getElementById('previewSection').classList.remove('hidden');
+            updateStepStatus(3);
+            renderizarTabela();
+        }
+
+        function parseSingleLineToBlocks(line) {
+            let tempLine = line;
+
+            let diaSemana = "";
+            let data = "";
+            let horaInicio = "";
+            let horaTermino = "";
+            let disciplina = "";
+            let nivel = "";
+
+            // 1. Horários
+            const timeMatch = tempLine.match(/(\d{1,2}(?::\d{2}|h)?)\s*(?:às|as|-|a)\s*(\d{1,2}(?::\d{2}|h)?)/i);
+            if (timeMatch) {
+                horaInicio = formatTime(timeMatch[1]);
+                horaTermino = formatTime(timeMatch[2]);
+                tempLine = tempLine.replace(timeMatch[0], ' ');
+            } else {
+                const singleTime = tempLine.match(/(\d{1,2}:\d{2})/);
+                if (singleTime) {
+                    horaInicio = formatTime(singleTime[1]);
+                    horaTermino = addOneHour(horaInicio);
+                    tempLine = tempLine.replace(singleTime[0], ' ');
+                }
+            }
+
+            // 2. Data
+            const dateMatch = tempLine.match(/\b(\d{1,2}\/\d{1,2})\b/);
+            if (dateMatch) {
+                data = dateMatch[1];
+                tempLine = tempLine.replace(dateMatch[0], ' ');
+            }
+
+            // 3. Dia da Semana
+            const diaMatch = tempLine.match(/(segunda-feira|terça-feira|quarta-feira|quinta-feira|sexta-feira|sábado|domingo|segunda|terça|quarta|quinta|sexta)/i);
+            if (diaMatch) {
+                const dStr = diaMatch[0].toLowerCase();
+                if (dStr.includes('seg')) diaSemana = "Segunda-feira";
+                else if (dStr.includes('ter')) diaSemana = "Terça-feira";
+                else if (dStr.includes('qua')) diaSemana = "Quarta-feira";
+                else if (dStr.includes('qui')) diaSemana = "Quinta-feira";
+                else if (dStr.includes('sex')) diaSemana = "Sexta-feira";
+                else if (dStr.includes('sáb') || dStr.includes('sab')) diaSemana = "Sábado";
+                else if (dStr.includes('dom')) diaSemana = "Domingo";
+
+                tempLine = tempLine.replace(diaMatch[0], ' ');
+            }
+
+            // 4. Nível
+            const nivelMatch = tempLine.match(/(?:nível|nivel|nº|n)\s*(\d+|básico|intermediário|avançado)/i);
+            if (nivelMatch) {
+                nivel = nivelMatch[1];
+                tempLine = tempLine.replace(nivelMatch[0], ' ');
+            }
+
+            // 5. Disciplina
+            const parts = tempLine.split(/\s*[\-\—\|;]\s*/).map(p => p.trim()).filter(p => p.length > 0);
+            if (parts.length > 0) {
+                disciplina = parts[0];
+            }
+
+            if (!diaSemana) diaSemana = "Segunda-feira";
+            if (!horaInicio) horaInicio = "08:00";
+            if (!horaTermino) horaTermino = addOneHour(horaInicio);
+            if (!disciplina) disciplina = "Geral";
+            if (!nivel) nivel = "1";
+
+            const yearText = document.getElementById('selectYear') ? document.getElementById('selectYear').value : '2026';
+            if (data && !data.includes('/20')) {
+                data = `${data}/${yearText}`;
+            }
+
+            // Divisão de Blocos de 1 Hora
+            const blocks = [];
+            let startHour = parseInt(horaInicio.split(':')[0], 10);
+            let endHour = parseInt(horaTermino.split(':')[0], 10);
+
+            if (endHour <= startHour) endHour = startHour + 1;
+
+            for (let h = startHour; h < endHour; h++) {
+                const hStartStr = String(h).padStart(2, '0') + ':00';
+                const hEndStr = String(h + 1).padStart(2, '0') + ':00';
+
+                blocks.push({
+                    diaSemana,
+                    data,
+                    horaInicio: hStartStr,
+                    horaTermino: hEndStr,
+                    disciplina,
+                    nivel
+                });
+            }
+
+            return blocks;
+        }
+
+        function formatTime(str) {
+            str = str.toLowerCase().replace('h', ':');
+            if (!str.includes(':')) str += ':00';
+            let [h, m] = str.split(':');
+            h = h.padStart(2, '0');
+            m = (m || '00').padEnd(2, '0');
+            return `${h}:${m}`;
+        }
+
+        function addOneHour(timeStr) {
+            let [h, m] = timeStr.split(':').map(Number);
+            h = (h + 1) % 24;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function sanitizeHTML(str) {
+            return String(str).replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+            });
+        }
+
+        function getLevelBadgeClass(nivel) {
+            const n = String(nivel).trim();
+            if (n === '1') return 'badge-level-1';
+            if (n === '2') return 'badge-level-2';
+            if (n === '3') return 'badge-level-3';
+            return 'badge-level-default';
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tableBody');
+            document.getElementById('recordCount').innerText = globalItems.length;
+            tbody.innerHTML = '';
+
+            globalItems.forEach((item, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-dark-card/50 transition border-b border-dark-border/50";
+                
+                const badgeClass = getLevelBadgeClass(item.nivel);
+
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-500 font-mono text-center">${idx + 1}</td>
+                    <td class="p-3"><input type="text" value="${sanitizeHTML(item.data)}" oninput="updateItem(${idx}, 'data', this.value)" class="w-28 p-1.5 bg-dark-input border border-dark-border rounded-lg text-slate-200 font-mono text-xs focus:ring-1 focus:ring-brand-blue"></td>
+                    <td class="p-3">
+                        <select onchange="updateItem(${idx}, 'diaSemana', this.value)" class="p-1.5 bg-dark-input border border-dark-border rounded-lg text-slate-200 text-xs focus:ring-1 focus:ring-brand-blue">
+                            ${DIAS_SEMANA.map(d => `<option value="${d}" ${d === item.diaSemana ? 'selected' : ''}>${d}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="p-3"><input type="time" value="${sanitizeHTML(item.horaInicio)}" oninput="updateItem(${idx}, 'horaInicio', this.value)" class="p-1.5 bg-dark-input border border-dark-border rounded-lg text-slate-200 text-xs font-mono"></td>
+                    <td class="p-3"><input type="time" value="${sanitizeHTML(item.horaTermino)}" oninput="updateItem(${idx}, 'horaTermino', this.value)" class="p-1.5 bg-dark-input border border-dark-border rounded-lg text-slate-200 text-xs font-mono"></td>
+                    <td class="p-3"><input type="text" value="${sanitizeHTML(item.disciplina)}" oninput="updateItem(${idx}, 'disciplina', this.value)" class="w-full p-1.5 bg-dark-input border border-dark-border rounded-lg text-slate-100 font-semibold text-xs focus:ring-1 focus:ring-brand-blue"></td>
+                    <td class="p-3 text-center">
+                        <div class="inline-flex items-center gap-1">
+                            <span class="${badgeClass} px-2 py-0.5 rounded text-[10px] font-bold">Nivel</span>
+                            <input type="text" value="${sanitizeHTML(item.nivel)}" oninput="updateItem(${idx}, 'nivel', this.value)" class="w-10 p-1 text-center bg-dark-input border border-dark-border rounded-lg text-slate-200 text-xs font-mono font-bold">
+                        </div>
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="removerLinha(${idx})" class="text-slate-500 hover:text-red-400 p-1.5 transition"><i class="fa-solid fa-xmark"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateItem(index, field, value) {
+            globalItems[index][field] = value;
+            if (field === 'nivel') {
+                renderizarTabela();
+            }
+        }
+
+        function adicionarLinha() {
+            const yearText = document.getElementById('selectYear').value;
+            globalItems.push({
+                diaSemana: "Segunda-feira",
+                data: `01/10/${yearText}`,
+                horaInicio: "08:00",
+                horaTermino: "09:00",
+                disciplina: "Nova Aula",
+                nivel: "1"
+            });
+            renderizarTabela();
+        }
+
+        function removerLinha(index) {
+            globalItems.splice(index, 1);
+            renderizarTabela();
+        }
+
+        function ordenarPorData() {
+            globalItems.sort((a, b) => {
+                if (a.data !== b.data) return a.data.localeCompare(b.data);
+                return a.horaInicio.localeCompare(b.horaInicio);
+            });
+            renderizarTabela();
+        }
+
+        function exportarExcel() {
+            if (globalItems.length === 0) return;
+
+            const wb = XLSX.utils.book_new();
+            const monthText = MESES[parseInt(document.getElementById('selectMonth').value) - 1].toUpperCase();
+            const yearText = document.getElementById('selectYear').value;
+
+            // ABA 1: Registros de Aulas
+            const dataA = [
+                [`AULAS DE ${monthText} DE ${yearText}`],
+                [],
+                ["Data", "Dia da Semana", "Hora Início", "Hora Término", "Disciplina", "Nível"]
+            ];
+
+            globalItems.forEach((item) => {
+                dataA.push([item.data, item.diaSemana, item.horaInicio, item.horaTermino, item.disciplina, item.nivel]);
+            });
+
+            const wsA = XLSX.utils.aoa_to_sheet(dataA);
+            wsA['!cols'] = [{ wch: 14 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 28 }, { wch: 10 }];
+            XLSX.utils.book_append_sheet(wb, wsA, "Registros de Aulas");
+
+            // ABA 2: Resumo
+            const dataResumo = [
+                ["RESUMO OPERACIONAL"],
+                [],
+                ["Total de Aulas Processadas", globalItems.length],
+                ["Mês de Referência", `${monthText} / ${yearText}`]
+            ];
+            const wsResumo = XLSX.utils.aoa_to_sheet(dataResumo);
+            XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo");
+
+            XLSX.writeFile(wb, `Planilha_Aulas_${monthText}_${yearText}.xlsx`);
+            updateStepStatus(4);
+        }
+    </script>
+</body>
+</html>
